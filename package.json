@@ -7,10 +7,15 @@
     "start": "NODE_ENV=development node index.js"
   },
   "keywords": [
-    "Livescale"
+    "Livescale",
+    "SFCC",
+    "Headless Commerce API"
   ],
-  "author": "Francis Masse",
-  "license": "ISC",
+  "author": {
+    "name": "Livescale",
+    "email": "api@livescale.tv"
+  },
+  "license": "CC0-1.0",
   "dependencies": {
     "body-parser": "^1.19.0",
     "commerce-sdk": "^2.5.0",
