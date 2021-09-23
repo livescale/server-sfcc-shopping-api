@@ -17,9 +17,11 @@ module.exports = function (app, config) {
 
       const convertedBasket = basketConverter(basket);
 
-      //here they gonna know. Documented here
-      // const redirectionUrl = `https://my-shop.com/${basketId}`;
-      // convertedBasket.cart_rul = redirectionUrl;
+      /* To be able to make customer redirection to your e-commerce site checkout at the Basket Level you'll need to add to Cart Redirection URL here to the convertedBasket. Here is an example of what it could look like: 
+      
+      const cartRedirectionUrl = `https://my-shop.com/${basket.id}`;
+      convertedBasket.cart_url = cartRedirectionUrl;
+      */
 
       res.status(200).send(convertedBasket);
       return next();

@@ -477,6 +477,7 @@ exports.basketConverter = (basket) => {
 
   const convertedBasket = {
     id: basket.basketId,
+    cart_url: null,
     customer: {
       id: basket.customerInfo.customerId,
       email: basket.customerInfo.email,
