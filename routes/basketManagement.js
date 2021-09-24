@@ -1,5 +1,8 @@
 const { Checkout } = require('commerce-sdk');
-const { itemsConverter } = require('../converters/inputConverters');
+const {
+  itemsConverter,
+  itemConverter,
+} = require('../converters/inputConverters');
 const { basketConverter } = require('../converters/outputConverters');
 
 module.exports = function (app, config) {
@@ -48,6 +51,61 @@ module.exports = function (app, config) {
       const basket = await shopperBasketsClient.addItemToBasket({
         parameters: { basketId },
         body: convertedItems,
+      });
+
+      const convertedBasket = basketConverter(basket);
+
+      res.status(200).send(convertedBasket);
+      return next();
+    } catch (error) {
+      const readableError = await error.response.json();
+
+      res
+        .status(error.response.status)
+        .send({ status: error.response.status, message: readableError.detail });
+
+      return next();
+    }
+  });
+
+  app.put('/baskets/:basket_id/items/:item_id', async (req, res, next) => {
+    const { basket_id: basketId, item_id: itemId } = req.params;
+    config.headers.authorization = req.session.shopper_token;
+
+    const shopperBasketsClient = new Checkout.ShopperBaskets(config);
+
+    try {
+      const convertedItems = itemConverter(req.body);
+
+      const basket = await shopperBasketsClient.updateItemInBasket({
+        parameters: { basketId, itemId },
+        body: convertedItems,
+      });
+
+      const convertedBasket = basketConverter(basket);
+
+      res.status(200).send(convertedBasket);
+      return next();
+    } catch (error) {
+      const readableError = await error.response.json();
+
+      res
+        .status(error.response.status)
+        .send({ status: error.response.status, message: readableError.detail });
+
+      return next();
+    }
+  });
+
+  app.delete('/baskets/:basket_id/items/:item_id', async (req, res, next) => {
+    const { basket_id: basketId, item_id: itemId } = req.params;
+    config.headers.authorization = req.session.shopper_token;
+
+    const shopperBasketsClient = new Checkout.ShopperBaskets(config);
+
+    try {
+      const basket = await shopperBasketsClient.removeItemFromBasket({
+        parameters: { basketId, itemId },
       });
 
       const convertedBasket = basketConverter(basket);

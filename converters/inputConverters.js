@@ -13,3 +13,12 @@ exports.itemsConverter = function (items) {
 
   return convertedItems;
 };
+
+exports.itemConverter = function (item) {
+  const convertedItem = {
+    productId: item.id,
+    quantity: item.quantity,
+  };
+
+  return convertedItem;
+};

@@ -1,13 +1,45 @@
 const { Product } = require('commerce-sdk');
+const axios = require('axios');
 const {
   catalogsConverter,
   categoriesConverter,
   productsConverter,
 } = require('../converters/outputConverters');
 
+const { clientId, clientPassword, tenant } = require('../config/env');
+
+/*
+This admin token is require to request Product informations
+*/
+getAdminToken = async () => {
+  const data = new URLSearchParams();
+  data.append('grant_type', 'client_credentials');
+  data.append(
+    'scope',
+    `SALESFORCE_COMMERCE_API:${tenant} sfcc.catalogs.rw sfcc.products.rw sfcc.orders.rw`
+  );
+
+  const response = await axios.request({
+    method: 'post',
+    url: 'https://account.demandware.com/dwsso/oauth2/access_token',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    auth: {
+      username: clientId,
+      password: clientPassword,
+    },
+    data,
+  });
+
+  const { access_token } = response.data;
+
+  return `Bearer ${access_token}`;
+};
+
 module.exports = (app, config) => {
   app.get('/catalogs', async (req, res, next) => {
-    config.headers.authorization = req.headers.authorization;
+    config.headers.authorization = await getAdminToken();
 
     const catalogsClient = new Product.Catalogs(config);
 
@@ -30,7 +62,8 @@ module.exports = (app, config) => {
   });
 
   app.get('/catalogs/:catalog_id/categories', async (req, res, next) => {
-    config.headers.authorization = req.headers.authorization;
+    config.headers.authorization = await getAdminToken();
+
     const { offset, limit } = req.query;
     const { catalog_id } = req.params;
 
@@ -59,14 +92,15 @@ module.exports = (app, config) => {
   app.get(
     '/catalogs/:catalog_id/categories/:category_id/products',
     async (req, res, next) => {
-      config.headers.authorization = req.headers.authorization;
+      config.headers.authorization = await getAdminToken();
+
       const { offset, limit } = req.query;
       const { catalog_id, category_id } = req.params;
 
       const catalogsClient = new Product.Catalogs(config);
 
       try {
-        const products = await catalogsClient.getAssignedProductFromCategory({
+        const products = await catalogsClient.searchProductsAssignedToCategory({
           parameters: {
             catalogId: catalog_id,
             categoryId: category_id,

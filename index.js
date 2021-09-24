@@ -5,27 +5,36 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const OAuth2Server = require('oauth2-server');
 const MongoStore = require('connect-mongo');
+const uriFormat = require('mongodb-uri');
 
 // Here you can get env variable that you set on config/env.js
 const {
   port,
-  db_url,
+  dbUrl,
   clientId,
   organizationId,
   shortCode,
   siteId,
 } = require('./config/env');
 
+function encodeMongoURI(urlString) {
+  if (urlString) {
+    let parsed = uriFormat.parse(urlString);
+    urlString = uriFormat.format(parsed);
+  }
+  return urlString;
+}
+
 mongoose.connect(
-  db_url,
+  encodeMongoURI(dbUrl),
   {
     useNewUrlParser: true,
   },
   function (err, res) {
     if (err) {
-      return console.error('Error connecting to "%s": "%s"', db_url, err);
+      return console.error('Error connecting to "%s": "%s"', dbUrl, err);
     }
-    console.log('Connected successfully to "%s"', db_url);
+    console.log('Connected successfully to "%s"', dbUrl);
   }
 );
 
@@ -44,7 +53,10 @@ app.use(
     secret: 'livescale',
     saveUninitialized: true,
     resave: true,
-    store: MongoStore.create({ mongoUrl: db_url, ttl: cookieTtl }),
+    store: MongoStore.create({
+      mongoUrl: encodeMongoURI(dbUrl),
+      ttl: cookieTtl,
+    }),
   })
 );
 

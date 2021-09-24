@@ -9,9 +9,11 @@ const { parsed: envs } = result;
 
 module.exports = {
   port: envs.PORT,
-  db_url: envs.DB_URL,
+  dbUrl: envs.dbUrl,
   clientId: envs.CLIENT_ID,
+  clientPassword: envs.CLIENT_PASSWORD,
   organizationId: envs.ORGANIZATION_ID,
+  tenant: envs.TENANT,
   shortCode: envs.SHORT_CODE,
   siteId: envs.SITE_ID,
 };
