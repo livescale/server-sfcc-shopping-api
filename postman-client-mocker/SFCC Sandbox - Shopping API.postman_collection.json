@@ -1,0 +1,405 @@
+{
+	"info": {
+		"_postman_id": "1d55ba0b-e112-40a8-b57a-1ec64ba681d6",
+		"name": "SFCC Sandbox - Shopping API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Product Management",
+			"item": [
+				{
+					"name": "Get Catalogs",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/catalogs",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"catalogs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Catalogs Categories",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/catalogs/:catalog_id/categories?offset=0&limit=50",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"catalogs",
+								":catalog_id",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							],
+							"variable": [
+								{
+									"key": "catalog_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Categories Products",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/catalogs/:catalog_id/categories/:category_id/products?offset=0&limit=50",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"catalogs",
+								":catalog_id",
+								"categories",
+								":category_id",
+								"products"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							],
+							"variable": [
+								{
+									"key": "catalog_id",
+									"value": ""
+								},
+								{
+									"key": "category_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authorization",
+			"item": [
+				{
+					"name": "Oauth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('access_token', function () {",
+									"    var response = pm.response.json()",
+									"    pm.environment.set(\"access_token\", response.access_token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "{{server_grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{server_client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{server_client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "scopes",
+									"value": "{{server_scopes}}",
+									"type": "text"
+								},
+								{
+									"key": "audience",
+									"value": "{{server_audience}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/oauth/token",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer",
+			"item": [
+				{
+					"name": "Customer Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"guest\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/customers/login",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"customers",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Basket Management",
+			"item": [
+				{
+					"name": "Create Basket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('basket_id', function () {",
+									"    var response = pm.response.json()",
+									"    pm.environment.set(\"basket_id\", response.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"id\": \"your-product-id-1\",\n        \"quantity\": 1\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/baskets",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"baskets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Basket Items",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"id\": \"your-product-id-1\",\n        \"quantity\": 1\n    },\n    {\n        \"id\": \"your-product-id-2\",\n        \"quantity\": 1\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/baskets/:basket_id/items",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"baskets",
+								":basket_id",
+								"items"
+							],
+							"variable": [
+								{
+									"key": "basket_id",
+									"value": "{{basket_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Basket Item",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"id\": \"deck-baked-garden\",\n        \"quantity\": 2\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/baskets/:basket_id/items/:item_id",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"baskets",
+								":basket_id",
+								"items",
+								":item_id"
+							],
+							"variable": [
+								{
+									"key": "basket_id",
+									"value": "{{basket_id}}"
+								},
+								{
+									"key": "item_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Basket Items",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server_url}}:{{server_port}}/baskets/:basket_id/items/:item_id",
+							"host": [
+								"{{server_url}}"
+							],
+							"port": "{{server_port}}",
+							"path": [
+								"baskets",
+								":basket_id",
+								"items",
+								":item_id"
+							],
+							"variable": [
+								{
+									"key": "basket_id",
+									"value": "{{basket_id}}"
+								},
+								{
+									"key": "item_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
