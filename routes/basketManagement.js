@@ -1,14 +1,14 @@
 const { Checkout } = require('commerce-sdk');
+const { getStorefrontConfig } = require('../config/commerce-sdk');
 const {
   itemsConverter,
   itemConverter,
 } = require('../converters/inputConverters');
 const { basketConverter } = require('../converters/outputConverters');
 
-module.exports = function (app, config) {
+module.exports = function (app) {
   app.post('/baskets', async (req, res, next) => {
-    config.headers.authorization = req.session.shopper_token;
-
+    const config = getStorefrontConfig(req.session.shopper_token);
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
     try {
@@ -22,7 +22,7 @@ module.exports = function (app, config) {
 
       /* To be able to make customer redirection to your e-commerce site checkout at the Basket Level you'll need to add to Cart Redirection URL here to the convertedBasket. Here is an example of what it could look like: 
       
-      const cartRedirectionUrl = `https://my-shop.com/${basket.id}`;
+      const cartRedirectionUrl = `https://my-shop.com/${basket.basketId}`;
       convertedBasket.cart_url = cartRedirectionUrl;
       */
 
@@ -41,8 +41,8 @@ module.exports = function (app, config) {
 
   app.post('/baskets/:basket_id/items', async (req, res, next) => {
     const { basket_id: basketId } = req.params;
-    config.headers.authorization = req.session.shopper_token;
 
+    const config = getStorefrontConfig(req.session.shopper_token);
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
     try {
@@ -70,8 +70,8 @@ module.exports = function (app, config) {
 
   app.put('/baskets/:basket_id/items/:item_id', async (req, res, next) => {
     const { basket_id: basketId, item_id: itemId } = req.params;
-    config.headers.authorization = req.session.shopper_token;
 
+    const config = getStorefrontConfig(req.session.shopper_token);
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
     try {
@@ -99,8 +99,8 @@ module.exports = function (app, config) {
 
   app.delete('/baskets/:basket_id/items/:item_id', async (req, res, next) => {
     const { basket_id: basketId, item_id: itemId } = req.params;
-    config.headers.authorization = req.session.shopper_token;
 
+    const config = getStorefrontConfig(req.session.shopper_token);
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
     try {

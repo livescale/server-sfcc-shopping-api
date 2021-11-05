@@ -41,6 +41,8 @@ exports.categoriesConverter = (categories) => {
   return convertedCategories;
 };
 
+const jsome = require('jsome');
+
 exports.productsConverter = (products) => {
   const convertedProducts = [];
 
@@ -49,18 +51,20 @@ exports.productsConverter = (products) => {
   productsFound.forEach((productFound) => {
     const { product } = productFound;
 
-    const typeKeys = Object.keys(product.type);
+    convertedProducts.push(product);
 
-    let convertedProduct = {};
-    if (typeKeys.includes('item')) {
-      convertedProduct = productTypeItem(product);
-    } else if (typeKeys.includes('variant')) {
-      convertedProduct = productTypeVariant(product);
-    } else if (typeKeys.includes('master')) {
-      convertedProduct = productTypeMaster(product);
-    }
+    // const typeKeys = Object.keys(product.type);
 
-    convertedProducts.push(convertedProduct);
+    // let convertedProduct = {};
+    // if (typeKeys.includes('item')) {
+    //   convertedProduct = productTypeItem(product);
+    // } else if (typeKeys.includes('variant')) {
+    //   convertedProduct = productTypeVariant(product);
+    // } else if (typeKeys.includes('master')) {
+    //   convertedProduct = productTypeMaster(product);
+    // }
+
+    // convertedProducts.push(convertedProduct);
   });
 
   return convertedProducts;
@@ -193,14 +197,17 @@ const productTypeMaster = (product) => {
   if (product.variants && product.variants.length > 0) {
     product.variants.forEach((variant) => {
       const attribute_values = [];
-      const variationValues = Object.keys(variant.variationValues);
 
-      variationValues.forEach((variationValue) => {
-        attribute_values.push({
-          key: variationValue,
-          value: variant.variationValues[variationValue],
+      if (variant.variationValues) {
+        const variationValues = Object.keys(variant.variationValues);
+
+        variationValues.forEach((variationValue) => {
+          attribute_values.push({
+            key: variationValue,
+            value: variant.variationValues[variationValue],
+          });
         });
-      });
+      }
 
       variants.push({
         sku: variant.productId,
@@ -237,41 +244,44 @@ const productTypeMaster = (product) => {
 /*
 Basket Output Converter
 */
-
 exports.basketConverter = (basket) => {
   const discount = [];
   let discounts_total = 0;
 
   if (basket.orderPriceAdjustments && basket.orderPriceAdjustments.length > 0) {
-    basket.orderPriceAdjustments.forEach((orderPriceAdjustment) => {
-      if (orderPriceAdjustment.appliedDiscount.percentage) {
-        discount.push({
-          name: orderPriceAdjustment.itemText,
-          code: orderPriceAdjustment.couponCode,
+    basket.orderPriceAdjustments.forEach((priceAdjustment) => {
+      const couponItem = basket.couponItems.find(
+        (couponItem) => couponItem.code === priceAdjustment.couponCode
+      );
 
+      if (priceAdjustment.appliedDiscount.percentage) {
+        discount.push({
+          id: couponItem.couponItemId,
+          name: priceAdjustment.itemText,
+          code: priceAdjustment.couponCode,
           applied_on: 'order',
           product_applied_on: null,
           value_type: 'PERCENTAGE',
-          value: orderPriceAdjustment.appliedDiscount.percentage,
-          discount_amount: orderPriceAdjustment.price,
+          value: priceAdjustment.appliedDiscount.percentage,
+          discount_amount: priceAdjustment.price,
           discount_currency: basket.currency,
         });
 
-        discounts_total += Math.abs(orderPriceAdjustment.price);
+        discounts_total += Math.abs(priceAdjustment.price);
       } else {
         discount.push({
-          name: orderPriceAdjustment.itemText,
-          code: orderPriceAdjustment.couponCode,
-
+          id: couponItem.couponItemId,
+          name: priceAdjustment.itemText,
+          code: priceAdjustment.couponCode,
           applied_on: 'order',
           product_applied_on: null,
           value_type: 'AMOUNT',
-          value: orderPriceAdjustment.appliedDiscount.amount,
-          discount_amount: orderPriceAdjustment.price,
+          value: priceAdjustment.appliedDiscount.amount,
+          discount_amount: priceAdjustment.price,
           discount_currency: basket.currency,
         });
 
-        discounts_total += Math.abs(orderPriceAdjustment.price);
+        discounts_total += Math.abs(priceAdjustment.price);
       }
     });
   }
@@ -284,9 +294,9 @@ exports.basketConverter = (basket) => {
       shippingItem.priceAdjustments.forEach((priceAdjustment) => {
         if (priceAdjustment.appliedDiscount.percentage) {
           discount.push({
+            id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-
             applied_on: 'shipping',
             product_applied_on: null,
             value_type: 'PERCENTAGE',
@@ -298,9 +308,9 @@ exports.basketConverter = (basket) => {
           discounts_total += Math.abs(priceAdjustment.price);
         } else if (Math.abs(priceAdjustment.price) === shippingItem.price) {
           discount.push({
+            id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-
             applied_on: 'shipping',
             product_applied_on: null,
             value_type: 'FREE',
@@ -312,9 +322,9 @@ exports.basketConverter = (basket) => {
           discounts_total += Math.abs(priceAdjustment.price);
         } else {
           discount.push({
+            id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-
             applied_on: 'shipping',
             product_applied_on: null,
             value_type: 'AMOUNT',
@@ -337,6 +347,10 @@ exports.basketConverter = (basket) => {
         productItem.priceAdjustments.length > 0
       ) {
         productItem.priceAdjustments.forEach((priceAdjustment) => {
+          const couponItem = basket.couponItems.find(
+            (couponItem) => couponItem.code === priceAdjustment.couponCode
+          );
+
           if (priceAdjustment.appliedDiscount.percentage) {
             items.push({
               quantity: productItem.quantity,
@@ -356,6 +370,7 @@ exports.basketConverter = (basket) => {
             });
 
             discount.push({
+              id: couponItem.couponItemId,
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
@@ -385,6 +400,7 @@ exports.basketConverter = (basket) => {
             });
 
             discount.push({
+              id: couponItem.couponItemId,
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
@@ -414,6 +430,7 @@ exports.basketConverter = (basket) => {
             });
 
             discount.push({
+              id: couponItem.couponItemId,
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
@@ -448,17 +465,33 @@ exports.basketConverter = (basket) => {
   }
 
   let shipping_address = null;
-  if (basket.shipments[0].shippingAddress) {
-    shipping_address = {
-      first_name: basket.shipments[0].shippingAddress.firstName,
-      last_name: basket.shipments[0].shippingAddress.lastName,
-      address1: basket.shipments[0].shippingAddress.address1,
-      address2: basket.shipments[0].shippingAddress.address2,
-      city: basket.shipments[0].shippingAddress.city,
-      country_code_alpha_2: basket.shipments[0].shippingAddress.countryCode,
-      province_code: basket.shipments[0].shippingAddress.stateCode,
-      zip: basket.shipments[0].shippingAddress.postalCode,
-    };
+  let shipping_method = null;
+  if (basket.shipments[0]) {
+    const shipment = basket.shipments[0];
+    if (shipment.shippingAddress) {
+      shipping_address = {
+        first_name: shipment.shippingAddress.firstName,
+        last_name: shipment.shippingAddress.lastName,
+        address1: shipment.shippingAddress.address1,
+        address2: shipment.shippingAddress.address2,
+        city: shipment.shippingAddress.city,
+        country_code_alpha_2: shipment.shippingAddress.countryCode,
+        province_code: shipment.shippingAddress.stateCode,
+        zip: shipment.shippingAddress.postalCode,
+        phone: shipment.shippingAddress.phone,
+      };
+    }
+    if (shipment.shippingMethod) {
+      shipping_method = {
+        id: shipment.shippingMethod.id,
+        name: shipment.shippingMethod.name,
+        carrier: null,
+        price: {
+          amount: shipment.shippingMethod.price,
+          currency: basket.currency,
+        },
+      };
+    }
   }
 
   let billing_address = null;
@@ -472,11 +505,22 @@ exports.basketConverter = (basket) => {
       country_code_alpha_2: basket.billingAddress.countryCode,
       province_code: basket.billingAddress.stateCode,
       zip: basket.billingAddress.postalCode,
+      phone: basket.billingAddress.phone,
+    };
+  }
+
+  let payment_method = null;
+  if (basket.paymentInstruments) {
+    const paymentInstrument = basket.paymentInstruments[0];
+    payment_method = {
+      id: paymentInstrument.paymentMethodId,
+      name: paymentInstrument.paymentMethodId,
     };
   }
 
   const convertedBasket = {
     id: basket.basketId,
+    currency: basket.currency,
     cart_url: null,
     customer: {
       id: basket.customerInfo.customerId,
@@ -484,8 +528,10 @@ exports.basketConverter = (basket) => {
     },
     items,
     discount,
-    billing_address,
     shipping_address,
+    shipping_method,
+    billing_address,
+    payment_method,
     sub_total: basket.productSubTotal,
     discounts_total,
     shipping_total: basket.shippingTotal,
@@ -500,6 +546,7 @@ exports.basketConverter = (basket) => {
 exports.shippingMethodsConverter = (shippingMethods) => {
   const convertedShippingMethods = [];
   const { applicableShippingMethods } = shippingMethods;
+
   applicableShippingMethods.forEach((applicableShippingMethod) => {
     convertedShippingMethods.push({
       id: applicableShippingMethod.id,
@@ -528,90 +575,13 @@ exports.paymentMethodsConverter = (paymentMethods) => {
   return convertedPaymentMethods;
 };
 
-exports.addressConverter = (shippingAddress) => {
-  const convertedShippingAddress = {
-    address1: shippingAddress.address1,
-    city: shippingAddress.city,
-    countryCode: shippingAddress.country_code_alpha_2,
-    firstName: shippingAddress.first_name,
-    lastName: shippingAddress.last_name,
-    postalCode: shippingAddress.zip,
-    stateCode: shippingAddress.province_code,
-  };
-
-  return convertedShippingAddress;
-};
-
-exports.paymentInstrumentConverter = (paymentMethod, amount) => {
-  const convertedPaymentInstrument = {
-    amount,
-    paymentMethodId: paymentMethod.id,
-  };
-
-  return convertedPaymentInstrument;
-};
-
 exports.orderConverter = (order) => {
-  const items = [];
-  order.productItems.forEach((productItem) => {
-    items.push({
-      quantity: productItem.quantity,
-      price: productItem.price,
-      id: productItem.itemId,
-      sku: productItem.productId,
-    });
-  });
-
-  let shipping_address = null;
-  if (order.shipments[0].shippingAddress) {
-    shipping_address = {
-      first_name: order.shipments[0].shippingAddress.firstName,
-      last_name: order.shipments[0].shippingAddress.lastName,
-      address1: order.shipments[0].shippingAddress.address1,
-      address2: order.shipments[0].shippingAddress.address2,
-      city: order.shipments[0].shippingAddress.city,
-      country_code_alpha_2: order.shipments[0].shippingAddress.countryCode,
-      province_code: order.shipments[0].shippingAddress.stateCode,
-      zip: order.shipments[0].shippingAddress.postalCode,
-    };
-  }
-
-  let billing_address = null;
-  if (order.billingAddress) {
-    billing_address = {
-      first_name: order.billingAddress.firstName,
-      last_name: order.billingAddress.lastName,
-      address1: order.billingAddress.address1,
-      address2: order.billingAddress.address2,
-      city: order.billingAddress.city,
-      country_code_alpha_2: order.billingAddress.countryCode,
-      province_code: order.billingAddress.stateCode,
-      zip: order.billingAddress.postalCode,
-    };
-  }
-
-  const convertedBasket = {
-    taxes_total: order.taxTotal,
-    shipping_total: order.shippingTotal,
-    billing_address,
-    shipping_address,
-    total: order.orderTotal,
-    sub_total: order.productSubTotal,
-    items,
-    taxation: order.taxation.toUpperCase(),
-    customer: {
-      id: order.customerInfo.customerId,
-      email: order.customerInfo.email,
-    },
-  };
-
   const convertedOrder = {
-    basket: convertedBasket,
     id: order.orderNo,
     status: order.status,
     payment_status: order.paymentStatus,
     total_invoiced: order.orderTotal,
-    total_paid: order.paymentInstruments[0].amount,
+    total_paid: 0.0,
   };
 
   return convertedOrder;

@@ -8,14 +8,7 @@ const MongoStore = require('connect-mongo');
 const uriFormat = require('mongodb-uri');
 
 // Here you can get env variable that you set on config/env.js
-const {
-  port,
-  dbUrl,
-  clientId,
-  organizationId,
-  shortCode,
-  siteId,
-} = require('./config/env');
+const { port, dbUrl } = require('./config/env');
 
 function encodeMongoURI(urlString) {
   if (urlString) {
@@ -77,7 +70,10 @@ This function is going to intercept every call except the Authorization call and
 */
 
 app.use((req, res, next) => {
-  let unless = new RegExp('/oauth/token|/catalogs|/catalogs/.*', 'i');
+  let unless = new RegExp(
+    '/express-setup|/oauth/token|/catalogs|/catalogs/.*',
+    'i'
+  );
 
   if (unless.test(req.originalUrl)) {
     return next();
@@ -86,29 +82,34 @@ app.use((req, res, next) => {
   const request = new Request(req);
   const response = new Response(res);
 
-  return app.oauth.authenticate(request, response).then(() => {
-    return next();
-  });
+  return app.oauth
+    .authenticate(request, response)
+    .then(() => {
+      return next();
+    })
+    .catch((error) => {
+      res
+        .status(error.status)
+        .send({ status: error.status, message: error.message });
+
+      return next();
+    });
 });
 
-/* This section is use to configure your ecommerce SDK */
-const { ClientConfig } = require('commerce-sdk');
-
-const config = new ClientConfig();
-config.headers = {};
-config.parameters = {
-  clientId,
-  organizationId,
-  shortCode,
-  siteId,
-};
-
 /* Start of the routes by sections */
+const routerV1_0_0 = express.Router();
 
 require('./routes/authorization')(app);
-require('./routes/customer')(app, config);
-require('./routes/productManagement')(app, config);
-require('./routes/basketManagement')(app, config);
+require('./routes/customer')(routerV1_0_0);
+require('./routes/productManagement')(routerV1_0_0);
+require('./routes/basketManagement')(routerV1_0_0);
+require('./routes/customerManagement')(routerV1_0_0);
+require('./routes/shipping')(routerV1_0_0);
+require('./routes/promotion')(routerV1_0_0);
+require('./routes/paymentInformation')(routerV1_0_0);
+require('./routes/orderManagement')(routerV1_0_0);
+
+app.use('/v1.0.0', routerV1_0_0);
 
 app.listen(port);
 console.log('Server running on port: ' + port);

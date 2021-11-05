@@ -1,56 +1,51 @@
 const { Product } = require('commerce-sdk');
-const axios = require('axios');
 const {
   catalogsConverter,
   categoriesConverter,
   productsConverter,
 } = require('../converters/outputConverters');
 
-const { clientId, clientPassword, tenant } = require('../config/env');
+const { getAdminConfig } = require('../config/commerce-sdk');
 
-/*
-This admin token is require to request Product informations
-*/
-getAdminToken = async () => {
-  const data = new URLSearchParams();
-  data.append('grant_type', 'client_credentials');
-  data.append(
-    'scope',
-    `SALESFORCE_COMMERCE_API:${tenant} sfcc.catalogs.rw sfcc.products.rw sfcc.orders.rw`
-  );
-
-  const response = await axios.request({
-    method: 'post',
-    url: 'https://account.demandware.com/dwsso/oauth2/access_token',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    auth: {
-      username: clientId,
-      password: clientPassword,
-    },
-    data,
-  });
-
-  const { access_token } = response.data;
-
-  return `Bearer ${access_token}`;
-};
-
-module.exports = (app, config) => {
+module.exports = (app) => {
   app.get('/catalogs', async (req, res, next) => {
-    config.headers.authorization = await getAdminToken();
-
-    const catalogsClient = new Product.Catalogs(config);
+    const { offset, limit } = req.query;
 
     try {
-      const catalogs = await catalogsClient.getCatalogs();
+      const config = await getAdminConfig();
 
-      const convertedCatalogs = catalogsConverter(catalogs);
+      const catalogsClient = new Product.Catalogs(config);
+
+      let convertedCatalogs = [];
+      let catalogs = await catalogsClient.getCatalogs({
+        parameters: { limit, offset },
+      });
+
+      convertedCatalogs = convertedCatalogs.concat(catalogsConverter(catalogs));
+
+      while (catalogs.start + catalogs.count < catalogs.total) {
+        const newOffset = catalogs.start + catalogs.count;
+        catalogs = await catalogsClient.getCatalogs({
+          parameters: { limit, offset: newOffset },
+        });
+
+        convertedCatalogs = convertedCatalogs.concat(
+          catalogsConverter(catalogs)
+        );
+      }
 
       res.status(200).send(convertedCatalogs);
       return next();
     } catch (error) {
+      if (error.isAxiosError) {
+        res.status(error.response.status).send({
+          status: error.response.status,
+          message: error.response.data.error_description,
+        });
+
+        return next();
+      }
+
       const readableError = await error.response.json();
 
       res
@@ -62,14 +57,13 @@ module.exports = (app, config) => {
   });
 
   app.get('/catalogs/:catalog_id/categories', async (req, res, next) => {
-    config.headers.authorization = await getAdminToken();
-
     const { offset, limit } = req.query;
     const { catalog_id } = req.params;
 
-    const catalogsClient = new Product.Catalogs(config);
-
     try {
+      const config = await getAdminConfig();
+      const catalogsClient = new Product.Catalogs(config);
+
       const categories = await catalogsClient.getCategoriesFromCatalog({
         parameters: { catalogId: catalog_id, limit, offset },
       });
@@ -79,6 +73,15 @@ module.exports = (app, config) => {
       res.status(200).send(convertedCategories);
       return next();
     } catch (error) {
+      if (error.isAxiosError) {
+        res.status(error.response.status).send({
+          status: error.response.status,
+          message: error.response.data.error_description,
+        });
+
+        return next();
+      }
+
       const readableError = await error.response.json();
 
       res
@@ -92,14 +95,13 @@ module.exports = (app, config) => {
   app.get(
     '/catalogs/:catalog_id/categories/:category_id/products',
     async (req, res, next) => {
-      config.headers.authorization = await getAdminToken();
-
       const { offset, limit } = req.query;
       const { catalog_id, category_id } = req.params;
 
-      const catalogsClient = new Product.Catalogs(config);
-
       try {
+        const config = await getAdminConfig();
+        const catalogsClient = new Product.Catalogs(config);
+
         const products = await catalogsClient.searchProductsAssignedToCategory({
           parameters: {
             catalogId: catalog_id,
@@ -122,6 +124,15 @@ module.exports = (app, config) => {
         res.status(200).send(convertedProducts);
         return next();
       } catch (error) {
+        if (error.isAxiosError) {
+          res.status(error.response.status).send({
+            status: error.response.status,
+            message: error.response.data.error_description,
+          });
+
+          return next();
+        }
+
         const readableError = await error.response.json();
 
         res.status(error.response.status).send({

@@ -1,7 +1,10 @@
 const { helpers } = require('commerce-sdk');
+const { getStorefrontConfig } = require('../config/commerce-sdk');
 
-module.exports = (app, config) => {
+module.exports = (app) => {
   app.post('/customers/login', (req, res, next) => {
+    const config = getStorefrontConfig(req.session.shopper_token);
+
     helpers
       .getShopperToken(config, { type: req.body.type })
       .then(async (token) => {
