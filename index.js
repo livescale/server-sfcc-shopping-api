@@ -53,11 +53,6 @@ app.use(
   })
 );
 
-const { Request, Response } = OAuth2Server;
-app.oauth = new OAuth2Server({
-  model: require('./model.js'),
-});
-
 /*
 This function is going to intercept every call except the Authorization call and the Product Management calls 
 
@@ -70,10 +65,7 @@ This function is going to intercept every call except the Authorization call and
 */
 
 app.use((req, res, next) => {
-  let unless = new RegExp(
-    '/express-setup|/oauth/token|/catalogs|/catalogs/.*',
-    'i'
-  );
+  let unless = new RegExp('/oauth/token|/catalogs|/catalogs/.*', 'i');
 
   if (unless.test(req.originalUrl)) {
     return next();
@@ -99,17 +91,32 @@ app.use((req, res, next) => {
 /* Start of the routes by sections */
 const routerV1_0_0 = express.Router();
 
-require('./routes/authorization')(app);
-require('./routes/customer')(routerV1_0_0);
-require('./routes/productManagement')(routerV1_0_0);
-require('./routes/basketManagement')(routerV1_0_0);
-require('./routes/customerManagement')(routerV1_0_0);
-require('./routes/shipping')(routerV1_0_0);
-require('./routes/promotion')(routerV1_0_0);
-require('./routes/paymentInformation')(routerV1_0_0);
-require('./routes/orderManagement')(routerV1_0_0);
+const { Request, Response } = OAuth2Server;
+routerV1_0_0.oauth = new OAuth2Server({
+  model: require('./model.js'),
+});
 
-app.use('/v1.0.0', routerV1_0_0);
+routerV1_0_0.use((req, res, next) => {
+  const accept_version = req.headers['accept-version'];
+
+  if (accept_version === '1.0.0') {
+    require('./routes/authorization')(routerV1_0_0);
+    require('./routes/customer')(routerV1_0_0);
+    require('./routes/productManagement')(routerV1_0_0);
+    require('./routes/basketManagement')(routerV1_0_0);
+    require('./routes/customerManagement')(routerV1_0_0);
+    require('./routes/shipping')(routerV1_0_0);
+    require('./routes/promotion')(routerV1_0_0);
+    require('./routes/paymentInformation')(routerV1_0_0);
+    require('./routes/orderManagement')(routerV1_0_0);
+
+    return next();
+  }
+
+  return res.status(301).send({ status: 301 });
+});
+
+app.use('/', routerV1_0_0);
 
 app.listen(port);
 console.log('Server running on port: ' + port);

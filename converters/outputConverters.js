@@ -51,20 +51,18 @@ exports.productsConverter = (products) => {
   productsFound.forEach((productFound) => {
     const { product } = productFound;
 
-    convertedProducts.push(product);
+    const typeKeys = Object.keys(product.type);
 
-    // const typeKeys = Object.keys(product.type);
+    let convertedProduct = {};
+    if (typeKeys.includes('item')) {
+      convertedProduct = productTypeItem(product);
+    } else if (typeKeys.includes('variant')) {
+      convertedProduct = productTypeVariant(product);
+    } else if (typeKeys.includes('master')) {
+      convertedProduct = productTypeMaster(product);
+    }
 
-    // let convertedProduct = {};
-    // if (typeKeys.includes('item')) {
-    //   convertedProduct = productTypeItem(product);
-    // } else if (typeKeys.includes('variant')) {
-    //   convertedProduct = productTypeVariant(product);
-    // } else if (typeKeys.includes('master')) {
-    //   convertedProduct = productTypeMaster(product);
-    // }
-
-    // convertedProducts.push(convertedProduct);
+    convertedProducts.push(convertedProduct);
   });
 
   return convertedProducts;
