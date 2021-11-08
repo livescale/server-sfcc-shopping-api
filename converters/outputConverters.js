@@ -41,7 +41,7 @@ exports.categoriesConverter = (categories) => {
   return convertedCategories;
 };
 
-const jsome = require('jsome');
+const jsome = require("jsome");
 
 exports.productsConverter = (products) => {
   const convertedProducts = [];
@@ -54,11 +54,11 @@ exports.productsConverter = (products) => {
     const typeKeys = Object.keys(product.type);
 
     let convertedProduct = {};
-    if (typeKeys.includes('item')) {
+    if (typeKeys.includes("item")) {
       convertedProduct = productTypeItem(product);
-    } else if (typeKeys.includes('variant')) {
+    } else if (typeKeys.includes("variant")) {
       convertedProduct = productTypeVariant(product);
-    } else if (typeKeys.includes('master')) {
+    } else if (typeKeys.includes("master")) {
       convertedProduct = productTypeMaster(product);
     }
 
@@ -71,7 +71,7 @@ exports.productsConverter = (products) => {
 const productTypeItem = (product) => {
   const productImages = (product.imageGroups || []).find(
     (group) =>
-      group.variationAttributes === undefined && group.viewType === 'large'
+      group.variationAttributes === undefined && group.viewType === "large"
   );
 
   const images = [];
@@ -114,7 +114,7 @@ const productTypeItem = (product) => {
 const productTypeVariant = (product) => {
   const productImages = (product.imageGroups || []).find(
     (group) =>
-      group.variationAttributes === undefined && group.viewType === 'large'
+      group.variationAttributes === undefined && group.viewType === "large"
   );
 
   const images = [];
@@ -157,7 +157,7 @@ const productTypeVariant = (product) => {
 const productTypeMaster = (product) => {
   const productImages = (product.imageGroups || []).find(
     (group) =>
-      group.variationAttributes === undefined && group.viewType === 'large'
+      group.variationAttributes === undefined && group.viewType === "large"
   );
 
   const images = [];
@@ -186,7 +186,7 @@ const productTypeMaster = (product) => {
       attributes.push({
         id: variationAttribute.id,
         name: (variationAttribute.name || {}).default,
-        input_type: 'DROPDOWN',
+        input_type: "DROPDOWN",
         values,
       });
     });
@@ -257,9 +257,9 @@ exports.basketConverter = (basket) => {
           id: couponItem.couponItemId,
           name: priceAdjustment.itemText,
           code: priceAdjustment.couponCode,
-          applied_on: 'order',
+          applied_on: "order",
           product_applied_on: null,
-          value_type: 'PERCENTAGE',
+          value_type: "PERCENTAGE",
           value: priceAdjustment.appliedDiscount.percentage,
           discount_amount: priceAdjustment.price,
           discount_currency: basket.currency,
@@ -271,9 +271,9 @@ exports.basketConverter = (basket) => {
           id: couponItem.couponItemId,
           name: priceAdjustment.itemText,
           code: priceAdjustment.couponCode,
-          applied_on: 'order',
+          applied_on: "order",
           product_applied_on: null,
-          value_type: 'AMOUNT',
+          value_type: "AMOUNT",
           value: priceAdjustment.appliedDiscount.amount,
           discount_amount: priceAdjustment.price,
           discount_currency: basket.currency,
@@ -295,9 +295,9 @@ exports.basketConverter = (basket) => {
             id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-            applied_on: 'shipping',
+            applied_on: "shipping",
             product_applied_on: null,
-            value_type: 'PERCENTAGE',
+            value_type: "PERCENTAGE",
             value: priceAdjustment.appliedDiscount.percentage,
             discount_amount: priceAdjustment.price,
             discount_currency: basket.currency,
@@ -309,9 +309,9 @@ exports.basketConverter = (basket) => {
             id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-            applied_on: 'shipping',
+            applied_on: "shipping",
             product_applied_on: null,
-            value_type: 'FREE',
+            value_type: "FREE",
             value: priceAdjustment.appliedDiscount.amount || 1,
             discount_amount: priceAdjustment.price,
             discount_currency: basket.currency,
@@ -323,9 +323,9 @@ exports.basketConverter = (basket) => {
             id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-            applied_on: 'shipping',
+            applied_on: "shipping",
             product_applied_on: null,
-            value_type: 'AMOUNT',
+            value_type: "AMOUNT",
             value: priceAdjustment.appliedDiscount.amount || 1,
             discount_amount: priceAdjustment.price,
             discount_currency: basket.currency,
@@ -372,7 +372,7 @@ exports.basketConverter = (basket) => {
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
-              value_type: 'PERCENTAGE',
+              value_type: "PERCENTAGE",
               value: priceAdjustment.appliedDiscount.percentage,
               discount_amount: priceAdjustment.price,
               discount_currency: basket.currency,
@@ -402,7 +402,7 @@ exports.basketConverter = (basket) => {
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
-              value_type: 'FREE',
+              value_type: "FREE",
               value: priceAdjustment.appliedDiscount.amount || 1,
               discount_amount: priceAdjustment.price,
               discount_currency: basket.currency,
@@ -432,7 +432,7 @@ exports.basketConverter = (basket) => {
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
-              value_type: 'AMOUNT',
+              value_type: "AMOUNT",
               value: priceAdjustment.appliedDiscount.amount || 1,
               discount_amount: priceAdjustment.price,
               discount_currency: basket.currency,
