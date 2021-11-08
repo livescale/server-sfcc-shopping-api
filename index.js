@@ -1,4 +1,5 @@
 const express = require('express');
+const expressRoutesVersioning = require('express-routes-versioning');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -32,10 +33,17 @@ mongoose.connect(
 );
 
 const app = express();
+const versioning = expressRoutesVersioning();
 
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(function (req, res, next) {
+  //req.version is used to determine the version
+  req.version = req.headers['accept-version'];
+  next();
+});
 
 /*
 express-session is used to store sessions in the mongodb
@@ -96,27 +104,27 @@ routerV1_0_0.oauth = new OAuth2Server({
   model: require('./model.js'),
 });
 
-routerV1_0_0.use((req, res, next) => {
-  const accept_version = req.headers['accept-version'];
+require('./routes/authorization')(routerV1_0_0);
+require('./routes/customer')(routerV1_0_0);
+require('./routes/productManagement')(routerV1_0_0);
+require('./routes/basketManagement')(routerV1_0_0);
+require('./routes/customerManagement')(routerV1_0_0);
+require('./routes/shipping')(routerV1_0_0);
+require('./routes/promotion')(routerV1_0_0);
+require('./routes/paymentInformation')(routerV1_0_0);
+require('./routes/orderManagement')(routerV1_0_0);
 
-  if (accept_version === '1.0.0') {
-    require('./routes/authorization')(routerV1_0_0);
-    require('./routes/customer')(routerV1_0_0);
-    require('./routes/productManagement')(routerV1_0_0);
-    require('./routes/basketManagement')(routerV1_0_0);
-    require('./routes/customerManagement')(routerV1_0_0);
-    require('./routes/shipping')(routerV1_0_0);
-    require('./routes/promotion')(routerV1_0_0);
-    require('./routes/paymentInformation')(routerV1_0_0);
-    require('./routes/orderManagement')(routerV1_0_0);
-
-    return next();
-  }
-
-  return res.status(301).send({ status: 301 });
-});
-
-app.use('/', routerV1_0_0);
+app.use(
+  '/',
+  versioning(
+    {
+      '1.0.0': routerV1_0_0,
+    },
+    (req, res, next) => {
+      res.status(404).send({ status: 404, message: 'Version not found' });
+    }
+  )
+);
 
 app.listen(port);
 console.log('Server running on port: ' + port);
