@@ -85,16 +85,14 @@ const productTypeItem = (product) => {
     sku: product.id,
     image: (product.image || {}).disBaseUrl,
     images: [],
-    prices: [
-      {
-        amount: product.price,
-        compare_at_amount: undefined,
-        currency: product.priceCurrency,
-        unit: product.unit,
-        unit_measure: product.unitMeasure,
-        price_per_unit: product.pricePerUnit,
-      },
-    ],
+    price: {
+      amount: product.price,
+      compare_at_amount: undefined,
+      currency: product.priceCurrency,
+      unit: product.unit,
+      unit_measure: product.unitMeasure,
+      price_per_unit: product.pricePerUnit,
+    },
     attribute_values: [],
   };
 
@@ -128,16 +126,15 @@ const productTypeVariant = (product) => {
     sku: product.id,
     image: (product.image || {}).disBaseUrl,
     images: [],
-    prices: [
-      {
-        amount: product.price,
-        compare_at_amount: undefined,
-        currency: product.priceCurrency,
-        unit: product.unit,
-        unit_measure: product.unitMeasure,
-        price_per_unit: product.pricePerUnit,
-      },
-    ],
+    price: {
+      amount: product.price,
+      compare_at_amount: undefined,
+      currency: product.priceCurrency,
+      unit: product.unit,
+      unit_measure: product.unitMeasure,
+      price_per_unit: product.pricePerUnit,
+    },
+
     attribute_values: [],
   };
 
@@ -211,16 +208,15 @@ const productTypeMaster = (product) => {
         sku: variant.productId,
         image: (variant.image || {}).disBaseUrl,
         images: [],
-        prices: [
-          {
-            amount: product.price,
-            compare_at_amount: undefined,
-            currency: product.priceCurrency,
-            unit: product.unit,
-            unit_measure: product.unitMeasure,
-            price_per_unit: product.pricePerUnit,
-          },
-        ],
+        price: {
+          amount: product.price,
+          compare_at_amount: undefined,
+          currency: product.priceCurrency,
+          unit: product.unit,
+          unit_measure: product.unitMeasure,
+          price_per_unit: product.pricePerUnit,
+        },
+
         variations: attribute_values,
       });
     });
