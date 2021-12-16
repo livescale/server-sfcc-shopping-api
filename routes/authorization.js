@@ -18,9 +18,7 @@ module.exports = (app) => {
         return next();
       })
       .catch(async (error) => {
-        res
-          .status(error.status)
-          .send({ status: error.status, message: error.message });
+        res.status(error.status).send({ status: error.status, message: error.message });
 
         return next();
       });
