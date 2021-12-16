@@ -4,7 +4,7 @@ Basket Input Converter
 
 exports.itemsConverter = function (items) {
   const convertedItems = [];
-  items.forEach((item) => {
+  items?.forEach((item) => {
     convertedItems.push({
       productId: item.id,
       quantity: item.quantity,
@@ -25,7 +25,8 @@ exports.itemConverter = function (item) {
 
 exports.basketCustomerConverter = function (customer) {
   const convertedCustomer = {
-    customerNo: customer.id,
+    // @todo API SPEC: customerNo should be optional
+    // customerNo: customer.id ?? null,
     email: customer.email,
   };
 
@@ -36,13 +37,13 @@ exports.shippingAddressConverter = function (shippingAddress) {
   const convertedShippingAddress = {
     firstName: shippingAddress.first_name,
     lastName: shippingAddress.last_name,
-    countryCode: shippingAddress.country_code_alpha_2,
+    countryCode: shippingAddress.country,
     stateCode: shippingAddress.province_code,
     city: shippingAddress.city,
     address1: shippingAddress.address1,
     address2: shippingAddress.address2,
     postalCode: shippingAddress.zip,
-    phone: shippingAddress.phone,
+    // phone: shippingAddress.phone,
   };
 
   return convertedShippingAddress;
@@ -60,13 +61,13 @@ exports.billingAddressConverter = function (billingAddress) {
   const convertedBillingAddress = {
     firstName: billingAddress.first_name,
     lastName: billingAddress.last_name,
-    countryCode: billingAddress.country_code_alpha_2,
+    countryCode: billingAddress.country,
     stateCode: billingAddress.province_code,
     city: billingAddress.city,
     address1: billingAddress.address1,
     address2: billingAddress.address2,
     postalCode: billingAddress.zip,
-    phone: billingAddress.phone,
+    // phone: billingAddress.phone ?? null,
   };
 
   return convertedBillingAddress;
