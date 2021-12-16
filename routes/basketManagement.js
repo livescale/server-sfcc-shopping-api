@@ -1,9 +1,6 @@
 const { Checkout } = require('commerce-sdk');
 const { getStorefrontConfig } = require('../config/commerce-sdk');
-const {
-  itemsConverter,
-  itemConverter,
-} = require('../converters/inputConverters');
+const { itemsConverter, itemConverter } = require('../converters/inputConverters');
 const { basketConverter } = require('../converters/outputConverters');
 
 module.exports = function (app) {
@@ -31,9 +28,7 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
@@ -60,22 +55,29 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
   });
 
   app.put('/baskets/:basket_id/items/:item_id', async (req, res, next) => {
-    const { basket_id: basketId, item_id: itemId } = req.params;
+    const { basket_id: basketId, item_id } = req.params;
 
     const config = getStorefrontConfig(req.session.shopper_token);
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
+    const currentBasket = await shopperBasketsClient.getBasket({
+      parameters: {
+        basketId,
+      },
+    });
+
     try {
       const convertedItems = itemConverter(req.body);
+
+      const itemId =
+        currentBasket.productItems.find((i) => i.productId === convertedItems.productId)?.itemId ?? item_id;
 
       const basket = await shopperBasketsClient.updateItemInBasket({
         parameters: { basketId, itemId },
@@ -89,21 +91,26 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
   });
 
   app.delete('/baskets/:basket_id/items/:item_id', async (req, res, next) => {
-    const { basket_id: basketId, item_id: itemId } = req.params;
+    const { basket_id: basketId, item_id } = req.params;
 
     const config = getStorefrontConfig(req.session.shopper_token);
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
+    const currentBasket = await shopperBasketsClient.getBasket({
+      parameters: {
+        basketId,
+      },
+    });
     try {
+      const itemId = currentBasket.productItems.find((i) => i.productId === item_id)?.itemId ?? item_id;
+
       const basket = await shopperBasketsClient.removeItemFromBasket({
         parameters: { basketId, itemId },
       });
@@ -115,9 +122,7 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
