@@ -26,41 +26,36 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
   });
 
-  app.delete(
-    '/baskets/:basket_id/promotion/:promotion_id',
-    async (req, res, next) => {
-      const { basket_id: basketId, promotion_id: promotionId } = req.params;
+  app.delete('/baskets/:basket_id/promotion/:promotion_id', async (req, res, next) => {
+    const { basket_id: basketId, promotion_id: promotionId } = req.params;
 
-      const config = getStorefrontConfig(req.session.shopper_token);
-      const shopperBasketsClient = new Checkout.ShopperBaskets(config);
+    const config = getStorefrontConfig(req.session.shopper_token);
+    const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
-      try {
-        const basket = await shopperBasketsClient.removeCouponFromBasket({
-          parameters: { basketId, couponItemId: promotionId },
-        });
+    try {
+      const basket = await shopperBasketsClient.removeCouponFromBasket({
+        parameters: { basketId, couponItemId: promotionId },
+      });
 
-        const convertedBasket = basketConverter(basket);
+      const convertedBasket = basketConverter(basket);
 
-        res.status(200).send(convertedBasket);
-        return next();
-      } catch (error) {
-        const readableError = await error.response.json();
+      res.status(200).send(convertedBasket);
+      return next();
+    } catch (error) {
+      const readableError = await error.response.json();
 
-        res.status(error.response.status).send({
-          status: error.response.status,
-          message: readableError.detail,
-        });
+      res.status(error.response.status).send({
+        status: error.response.status,
+        message: readableError.detail,
+      });
 
-        return next();
-      }
+      return next();
     }
-  );
+  });
 };
