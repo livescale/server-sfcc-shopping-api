@@ -8,12 +8,8 @@ exports.catalogsConverter = (catalogs) => {
     catalogs.data.forEach((catalog) => {
       convertedCatalogs.push({
         id: catalog.id,
-        name:
-          catalog.name && catalog.name.default ? catalog.name.default : null,
-        description:
-          catalog.description && catalog.description.default
-            ? catalog.description.default
-            : null,
+        name: catalog.name && catalog.name.default ? catalog.name.default : null,
+        description: catalog.description && catalog.description.default ? catalog.description.default : null,
       });
     });
   }
@@ -28,12 +24,8 @@ exports.categoriesConverter = (categories) => {
     categories.data.forEach((category) => {
       convertedCategories.push({
         id: category.id,
-        name:
-          category.name && category.name.default ? category.name.default : null,
-        description:
-          category.description && category.description.default
-            ? category.description.default
-            : null,
+        name: category.name && category.name.default ? category.name.default : null,
+        description: category.description && category.description.default ? category.description.default : null,
       });
     });
   }
@@ -41,7 +33,7 @@ exports.categoriesConverter = (categories) => {
   return convertedCategories;
 };
 
-const jsome = require("jsome");
+const jsome = require('jsome');
 
 exports.productsConverter = (products) => {
   const convertedProducts = [];
@@ -54,11 +46,11 @@ exports.productsConverter = (products) => {
     const typeKeys = Object.keys(product.type);
 
     let convertedProduct = {};
-    if (typeKeys.includes("item")) {
+    if (typeKeys.includes('item')) {
       convertedProduct = productTypeItem(product);
-    } else if (typeKeys.includes("variant")) {
+    } else if (typeKeys.includes('variant')) {
       convertedProduct = productTypeVariant(product);
-    } else if (typeKeys.includes("master")) {
+    } else if (typeKeys.includes('master')) {
       convertedProduct = productTypeMaster(product);
     }
 
@@ -70,8 +62,7 @@ exports.productsConverter = (products) => {
 
 const productTypeItem = (product) => {
   const productImages = (product.imageGroups || []).find(
-    (group) =>
-      group.variationAttributes === undefined && group.viewType === "large"
+    (group) => group.variationAttributes === undefined && group.viewType === 'large'
   );
 
   const images = [];
@@ -111,8 +102,7 @@ const productTypeItem = (product) => {
 
 const productTypeVariant = (product) => {
   const productImages = (product.imageGroups || []).find(
-    (group) =>
-      group.variationAttributes === undefined && group.viewType === "large"
+    (group) => group.variationAttributes === undefined && group.viewType === 'large'
   );
 
   const images = [];
@@ -153,8 +143,7 @@ const productTypeVariant = (product) => {
 
 const productTypeMaster = (product) => {
   const productImages = (product.imageGroups || []).find(
-    (group) =>
-      group.variationAttributes === undefined && group.viewType === "large"
+    (group) => group.variationAttributes === undefined && group.viewType === 'large'
   );
 
   const images = [];
@@ -183,7 +172,7 @@ const productTypeMaster = (product) => {
       attributes.push({
         id: variationAttribute.id,
         name: (variationAttribute.name || {}).default,
-        input_type: "DROPDOWN",
+        input_type: 'DROPDOWN',
         values,
       });
     });
@@ -239,23 +228,21 @@ const productTypeMaster = (product) => {
 Basket Output Converter
 */
 exports.basketConverter = (basket) => {
-  const discount = [];
+  const discounts = [];
   let discounts_total = 0;
 
   if (basket.orderPriceAdjustments && basket.orderPriceAdjustments.length > 0) {
     basket.orderPriceAdjustments.forEach((priceAdjustment) => {
-      const couponItem = basket.couponItems.find(
-        (couponItem) => couponItem.code === priceAdjustment.couponCode
-      );
+      const couponItem = basket.couponItems.find((couponItem) => couponItem.code === priceAdjustment.couponCode);
 
       if (priceAdjustment.appliedDiscount.percentage) {
-        discount.push({
+        discounts.push({
           id: couponItem.couponItemId,
           name: priceAdjustment.itemText,
           code: priceAdjustment.couponCode,
-          applied_on: "order",
+          applied_on: 'order',
           product_applied_on: null,
-          value_type: "PERCENTAGE",
+          value_type: 'PERCENTAGE',
           value: priceAdjustment.appliedDiscount.percentage,
           discount_amount: priceAdjustment.price,
           discount_currency: basket.currency,
@@ -263,13 +250,13 @@ exports.basketConverter = (basket) => {
 
         discounts_total += Math.abs(priceAdjustment.price);
       } else {
-        discount.push({
+        discounts.push({
           id: couponItem.couponItemId,
           name: priceAdjustment.itemText,
           code: priceAdjustment.couponCode,
-          applied_on: "order",
+          applied_on: 'order',
           product_applied_on: null,
-          value_type: "AMOUNT",
+          value_type: 'AMOUNT',
           value: priceAdjustment.appliedDiscount.amount,
           discount_amount: priceAdjustment.price,
           discount_currency: basket.currency,
@@ -281,19 +268,16 @@ exports.basketConverter = (basket) => {
   }
 
   basket.shippingItems.forEach((shippingItem) => {
-    if (
-      shippingItem.priceAdjustments &&
-      shippingItem.priceAdjustments.length > 0
-    ) {
+    if (shippingItem.priceAdjustments && shippingItem.priceAdjustments.length > 0) {
       shippingItem.priceAdjustments.forEach((priceAdjustment) => {
         if (priceAdjustment.appliedDiscount.percentage) {
-          discount.push({
+          discounts.push({
             id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-            applied_on: "shipping",
+            applied_on: 'shipping',
             product_applied_on: null,
-            value_type: "PERCENTAGE",
+            value_type: 'PERCENTAGE',
             value: priceAdjustment.appliedDiscount.percentage,
             discount_amount: priceAdjustment.price,
             discount_currency: basket.currency,
@@ -301,13 +285,13 @@ exports.basketConverter = (basket) => {
 
           discounts_total += Math.abs(priceAdjustment.price);
         } else if (Math.abs(priceAdjustment.price) === shippingItem.price) {
-          discount.push({
+          discounts.push({
             id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-            applied_on: "shipping",
+            applied_on: 'shipping',
             product_applied_on: null,
-            value_type: "FREE",
+            value_type: 'FREE',
             value: priceAdjustment.appliedDiscount.amount || 1,
             discount_amount: priceAdjustment.price,
             discount_currency: basket.currency,
@@ -315,13 +299,13 @@ exports.basketConverter = (basket) => {
 
           discounts_total += Math.abs(priceAdjustment.price);
         } else {
-          discount.push({
+          discounts.push({
             id: priceAdjustment.promotionId,
             name: priceAdjustment.itemText,
             code: priceAdjustment.couponCode,
-            applied_on: "shipping",
+            applied_on: 'shipping',
             product_applied_on: null,
-            value_type: "AMOUNT",
+            value_type: 'AMOUNT',
             value: priceAdjustment.appliedDiscount.amount || 1,
             discount_amount: priceAdjustment.price,
             discount_currency: basket.currency,
@@ -336,14 +320,9 @@ exports.basketConverter = (basket) => {
   const items = [];
   if (basket.productItems && basket.productItems.length > 0) {
     basket.productItems.forEach((productItem) => {
-      if (
-        productItem.priceAdjustments &&
-        productItem.priceAdjustments.length > 0
-      ) {
+      if (productItem.priceAdjustments && productItem.priceAdjustments.length > 0) {
         productItem.priceAdjustments.forEach((priceAdjustment) => {
-          const couponItem = basket.couponItems.find(
-            (couponItem) => couponItem.code === priceAdjustment.couponCode
-          );
+          const couponItem = basket.couponItems.find((couponItem) => couponItem.code === priceAdjustment.couponCode);
 
           if (priceAdjustment.appliedDiscount.percentage) {
             items.push({
@@ -363,12 +342,12 @@ exports.basketConverter = (basket) => {
               sku: productItem.productId,
             });
 
-            discount.push({
+            discounts.push({
               id: couponItem.couponItemId,
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
-              value_type: "PERCENTAGE",
+              value_type: 'PERCENTAGE',
               value: priceAdjustment.appliedDiscount.percentage,
               discount_amount: priceAdjustment.price,
               discount_currency: basket.currency,
@@ -393,12 +372,12 @@ exports.basketConverter = (basket) => {
               sku: productItem.productId,
             });
 
-            discount.push({
+            discounts.push({
               id: couponItem.couponItemId,
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
-              value_type: "FREE",
+              value_type: 'FREE',
               value: priceAdjustment.appliedDiscount.amount || 1,
               discount_amount: priceAdjustment.price,
               discount_currency: basket.currency,
@@ -423,12 +402,12 @@ exports.basketConverter = (basket) => {
               sku: productItem.productId,
             });
 
-            discount.push({
+            discounts.push({
               id: couponItem.couponItemId,
               name: priceAdjustment.itemText,
               code: priceAdjustment.couponCode,
               applied_on: productItem.productId,
-              value_type: "AMOUNT",
+              value_type: 'AMOUNT',
               value: priceAdjustment.appliedDiscount.amount || 1,
               discount_amount: priceAdjustment.price,
               discount_currency: basket.currency,
@@ -446,9 +425,7 @@ exports.basketConverter = (basket) => {
           },
           discounted_price: {
             amount:
-              productItem.price === productItem.priceAfterOrderDiscount
-                ? null
-                : productItem.priceAfterOrderDiscount,
+              productItem.price === productItem.priceAfterOrderDiscount ? null : productItem.priceAfterOrderDiscount,
             currency: basket.currency,
           },
           id: productItem.itemId,
@@ -521,7 +498,7 @@ exports.basketConverter = (basket) => {
       email: basket.customerInfo.email,
     },
     items,
-    discount,
+    discounts,
     shipping_address,
     shipping_method,
     billing_address,
@@ -548,7 +525,7 @@ exports.shippingMethodsConverter = (shippingMethods) => {
       carrier: null,
       price: {
         amount: applicableShippingMethod.price,
-        currency: null,
+        currency: 'USD', // @todo hardcoded for now, it is a required field by the OpenAPI spec
       },
     });
   });
