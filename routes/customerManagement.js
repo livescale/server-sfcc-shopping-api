@@ -26,9 +26,7 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
