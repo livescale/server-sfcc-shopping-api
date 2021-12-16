@@ -2,14 +2,8 @@ const { Checkout } = require('commerce-sdk');
 
 const { getStorefrontConfig } = require('../config/commerce-sdk');
 
-const {
-  billingAddressConverter,
-  paymentMethodConverter,
-} = require('../converters/inputConverters');
-const {
-  basketConverter,
-  paymentMethodsConverter,
-} = require('../converters/outputConverters');
+const { billingAddressConverter, paymentMethodConverter } = require('../converters/inputConverters');
+const { basketConverter, paymentMethodsConverter } = require('../converters/outputConverters');
 
 module.exports = function (app) {
   app.put('/baskets/:basket_id/billing_address', async (req, res, next) => {
@@ -33,9 +27,7 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
@@ -48,10 +40,9 @@ module.exports = function (app) {
     const shopperBasketsClient = new Checkout.ShopperBaskets(config);
 
     try {
-      const paymentMethods =
-        await shopperBasketsClient.getPaymentMethodsForBasket({
-          parameters: { basketId },
-        });
+      const paymentMethods = await shopperBasketsClient.getPaymentMethodsForBasket({
+        parameters: { basketId },
+      });
 
       const convertedPaymentMethods = paymentMethodsConverter(paymentMethods);
 
@@ -60,9 +51,7 @@ module.exports = function (app) {
     } catch (error) {
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
@@ -81,16 +70,12 @@ module.exports = function (app) {
         parameters: { basketId },
       });
 
-      const convertedPaymentMethod = paymentMethodConverter(
-        paymentMethodId,
-        basket.orderTotal
-      );
+      const convertedPaymentMethod = paymentMethodConverter(paymentMethodId, basket.orderTotal);
 
-      const updatedBasket =
-        await shopperBasketsClient.addPaymentInstrumentToBasket({
-          parameters: { basketId },
-          body: convertedPaymentMethod,
-        });
+      const updatedBasket = await shopperBasketsClient.addPaymentInstrumentToBasket({
+        parameters: { basketId },
+        body: convertedPaymentMethod,
+      });
 
       const convertedBasket = basketConverter(updatedBasket);
 
@@ -108,9 +93,7 @@ module.exports = function (app) {
 
       const readableError = await error.response.json();
 
-      res
-        .status(error.response.status)
-        .send({ status: error.response.status, message: readableError.detail });
+      res.status(error.response.status).send({ status: error.response.status, message: readableError.detail });
 
       return next();
     }
