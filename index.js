@@ -72,29 +72,31 @@ This function is going to intercept every call except the Authorization call and
 
 */
 
-app.use((req, res, next) => {
-  let unless = new RegExp('/oauth/token|/catalogs|/catalogs/.*', 'i');
+// app.use((req, res, next) => {
+//   let unless = new RegExp("/oauth/token|/catalogs|/catalogs/.*", "i");
 
-  if (unless.test(req.originalUrl)) {
-    return next();
-  }
+//   if (unless.test(req.originalUrl)) {
+//     return next();
+//   }
 
-  const request = new Request(req);
-  const response = new Response(res);
+//   const request = new Request(req);
+//   const response = new Response(res);
 
-  return app.oauth
-    .authenticate(request, response)
-    .then(() => {
-      return next();
-    })
-    .catch((error) => {
-      res
-        .status(error.status)
-        .send({ status: error.status, message: error.message });
+//   return app.oauth
+//     .authenticate(request, response)
+//     .then(() => {
+//       return next();
+//     })
+//     .catch((error) => {
+//       res
+//         .status(error.status)
+//         .send({ status: error.status, message: error.message });
 
-      return next();
-    });
-});
+//       return next();
+//     });
+
+//   return next();
+// });
 
 /* Start of the routes by sections */
 const routerV1_0_0 = express.Router();
@@ -103,6 +105,15 @@ const { Request, Response } = OAuth2Server;
 routerV1_0_0.oauth = new OAuth2Server({
   model: require('./model.js'),
 });
+
+let demoLogger = (req, res, next) => {
+  console.log('The route name is: ', req.path);
+  next();
+};
+
+app.use(demoLogger);
+
+console.log('v1 router created!');
 
 require('./routes/authorization')(routerV1_0_0);
 require('./routes/customer')(routerV1_0_0);
