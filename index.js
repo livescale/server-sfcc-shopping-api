@@ -115,7 +115,10 @@ app.use(demoLogger);
 
 console.log('v1 router created!');
 
-require('./routes/health')(routerV1_0_0);
+app.get('/health', (req, res) => {
+  res.send('ok');
+});
+
 require('./routes/authorization')(routerV1_0_0);
 require('./routes/customer')(routerV1_0_0);
 require('./routes/productManagement')(routerV1_0_0);
