@@ -24,7 +24,7 @@ exports.categoriesConverter = (categories) => {
     categories.data.forEach((category) => {
       convertedCategories.push({
         id: category.id,
-        name: category.name && category.name.default ? category.name.default : null,
+        title: category.name && category.name.default ? category.name.default : null,
         description: category.description && category.description.default ? category.description.default : null,
       });
     });
