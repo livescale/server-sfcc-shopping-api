@@ -1,19 +1,10 @@
-const dotenv = require('dotenv');
-const result = dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
-
-if (result.error) {
-  throw result.error;
-}
-
-const { parsed: envs } = result;
-
 module.exports = {
-  port: envs.PORT,
-  dbUrl: envs.DB_URL,
-  clientId: envs.CLIENT_ID,
-  clientPassword: envs.CLIENT_PASSWORD,
-  organizationId: envs.ORGANIZATION_ID,
-  tenant: envs.TENANT,
-  shortCode: envs.SHORT_CODE,
-  siteId: envs.SITE_ID,
+  port: process.env.PORT,
+  dbUrl: process.env.DB_URL,
+  clientId: process.env.CLIENT_ID,
+  clientPassword: process.env.CLIENT_PASSWORD,
+  organizationId: process.env.ORGANIZATION_ID,
+  tenant: process.env.TENANT,
+  shortCode: process.env.SHORT_CODE,
+  siteId: process.env.SITE_ID,
 };
